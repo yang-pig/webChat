@@ -2,6 +2,7 @@
 namespace App;
 
 
+use App\WebSocket\Test;
 use EasySwoole\Core\Socket\AbstractInterface\ParserInterface;
 use EasySwoole\Core\Socket\Common\CommandBean;
 
@@ -11,18 +12,38 @@ class Parser implements ParserInterface
     public static function decode($raw, $client)
     {
 
-        $command = new CommandBean();
-        $json = json_decode($raw,1);
-        $command->setControllerClass(\App\WebSocket\Test::class);
-        $command->setAction($json['action']);
-        $command->setArg('content',$json['content']);
-        return $command;
+//        $command = new CommandBean();
+//        $json = json_decode($raw,1);
+//        $command->setControllerClass(\App\WebSocket\Test::class);
+//        $command->setAction($json['action']);
+//        $command->setArg('content',$json['content']);
+//        return $command;
+
+
+        //检查数据是否为JSON
+        $commandLine = json_decode($raw, true);
+        if (!is_array($commandLine)) {
+            return 'unknown command';
+        }
+
+        $CommandBean = new CommandBean();
+        $control = isset($commandLine['controller']) ? 'App\\WebSocket\\'. ucfirst($commandLine['controller']) : '';
+        $action = $commandLine['action'] ?? 'none';
+        $data = $commandLine['data'] ?? null;
+        //找不到类时访问默认Test类
+        $CommandBean->setControllerClass(class_exists($control) ? $control : Test::class);
+        $CommandBean->setAction(class_exists($control) ? $action : 'actionNotFound');
+        $CommandBean->setArg('data', $data);
+
+        return $CommandBean;
+
+
+
 
     }
 
     public static function encode(string $raw, $client): ?string
     {
-        // TODO: Implement encode() method.
         return $raw;
     }
 }

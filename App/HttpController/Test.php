@@ -9,7 +9,9 @@ class Test extends ViewController
 {
     function index()
     {
-
+        $this->response()->write(Room::testSet());
+        $this->response()->write("\n");
+        $this->response()->write(Room::testGet());
 
         $this->fetch('Home/test');      # 对应模板: Views/index.html
 
